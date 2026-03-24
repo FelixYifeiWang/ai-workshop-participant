@@ -24,6 +24,8 @@ function workshopReducer(
   switch (action.type) {
     case "SET_API_KEY":
       return { ...state, apiKey: action.payload };
+    case "SET_UPLOADED_FILES":
+      return { ...state, uploadedFiles: action.payload, doodleUrls: [] };
     case "ADD_UPLOADED_FILE":
       return {
         ...state,

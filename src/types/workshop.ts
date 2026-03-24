@@ -30,6 +30,7 @@ export interface WorkshopState {
 
 export type WorkshopAction =
   | { type: "SET_API_KEY"; payload: string }
+  | { type: "SET_UPLOADED_FILES"; payload: UploadedFile[] }
   | { type: "ADD_UPLOADED_FILE"; payload: UploadedFile }
   | { type: "REMOVE_UPLOADED_FILE"; payload: number }
   | { type: "SET_DOODLE_URLS"; payload: string[] }
