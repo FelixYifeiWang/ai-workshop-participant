@@ -10,9 +10,6 @@ export interface WordArtPair {
 }
 
 export interface WorkshopState {
-  // API key
-  apiKey: string;
-
   // Step 6
   uploadedFiles: UploadedFile[];
   doodleUrls: string[];
@@ -34,7 +31,6 @@ export interface WorkshopState {
 }
 
 export type WorkshopAction =
-  | { type: "SET_API_KEY"; payload: string }
   | { type: "SET_UPLOADED_FILES"; payload: UploadedFile[] }
   | { type: "ADD_UPLOADED_FILE"; payload: UploadedFile }
   | { type: "REMOVE_UPLOADED_FILE"; payload: number }

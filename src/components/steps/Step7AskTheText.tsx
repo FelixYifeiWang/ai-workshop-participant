@@ -23,10 +23,7 @@ export default function Step7AskTheText() {
     try {
       const res = await fetch("/api/generate-questions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": state.apiKey,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: combinedText }),
       });
 
@@ -55,7 +52,6 @@ export default function Step7AskTheText() {
 
       const res = await fetch("/api/ocr-and-respond", {
         method: "POST",
-        headers: { "x-api-key": state.apiKey },
         body: formData,
       });
 

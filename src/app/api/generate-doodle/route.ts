@@ -3,18 +3,13 @@ import { getOpenAIClient, IMAGE_MODEL } from "@/lib/openai";
 import { doodlePrompt } from "@/lib/prompts";
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key");
-  if (!apiKey) {
-    return NextResponse.json({ error: "API key required" }, { status: 401 });
-  }
-
   try {
     const { text } = await req.json();
     if (!text) {
       return NextResponse.json({ error: "Text required" }, { status: 400 });
     }
 
-    const openai = getOpenAIClient(apiKey);
+    const openai = getOpenAIClient();
     const response = await openai.images.generate({
       model: IMAGE_MODEL,
       prompt: doodlePrompt(text),

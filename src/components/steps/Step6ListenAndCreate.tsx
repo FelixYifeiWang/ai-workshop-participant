@@ -25,10 +25,7 @@ export default function Step6ListenAndCreate() {
       try {
         const res = await fetch("/api/generate-doodle", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": state.apiKey,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: state.uploadedFiles[i].text }),
         });
 

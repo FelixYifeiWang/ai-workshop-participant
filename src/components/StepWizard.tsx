@@ -1,7 +1,6 @@
 "use client";
 
 import { useWorkshop } from "@/context/WorkshopContext";
-import ApiKeyInput from "./ApiKeyInput";
 import StepNavigation from "./StepNavigation";
 import Step6ListenAndCreate from "./steps/Step6ListenAndCreate";
 import Step7AskTheText from "./steps/Step7AskTheText";
@@ -18,10 +17,6 @@ const STEP_LABELS: Record<number, string> = {
 export default function StepWizard() {
   const { state } = useWorkshop();
   const { currentStep } = state;
-
-  if (currentStep === 0) {
-    return <ApiKeyInput />;
-  }
 
   return (
     <div>

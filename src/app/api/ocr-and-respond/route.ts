@@ -7,11 +7,6 @@ function stripEmDashes(text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key");
-  if (!apiKey) {
-    return NextResponse.json({ error: "API key required" }, { status: 401 });
-  }
-
   try {
     const formData = await req.formData();
     const images = formData.getAll("images") as File[];
@@ -23,7 +18,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert images to base64 data URLs
     const imageContents = await Promise.all(
       images.map(async (file) => {
         const buffer = Buffer.from(await file.arrayBuffer());
@@ -38,7 +32,7 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const openai = getOpenAIClient(apiKey);
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: TEXT_MODEL,
       messages: [
@@ -60,7 +54,6 @@ export async function POST(req: NextRequest) {
     const raw = response.choices[0]?.message?.content || "";
     const cleaned = stripEmDashes(raw);
 
-    // Extract JSON from response
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (!match) {
       return NextResponse.json(

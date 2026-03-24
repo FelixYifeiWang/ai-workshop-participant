@@ -20,7 +20,6 @@ export default function Step9ShareReflection() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": state.apiKey,
         },
         body: JSON.stringify({
           extractedTextSnippet: combinedText.slice(0, 200) || null,

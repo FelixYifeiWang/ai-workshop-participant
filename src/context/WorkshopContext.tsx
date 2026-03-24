@@ -4,7 +4,6 @@ import { createContext, useContext, useReducer, ReactNode } from "react";
 import { WorkshopState, WorkshopAction } from "@/types/workshop";
 
 const initialState: WorkshopState = {
-  apiKey: "",
   uploadedFiles: [],
   doodleUrls: [],
   generatedQuestions: null,
@@ -13,7 +12,7 @@ const initialState: WorkshopState = {
   wordInputs: [],
   wordArtPairs: [],
   reflection: null,
-  currentStep: 0,
+  currentStep: 6,
 };
 
 function workshopReducer(
@@ -21,8 +20,6 @@ function workshopReducer(
   action: WorkshopAction
 ): WorkshopState {
   switch (action.type) {
-    case "SET_API_KEY":
-      return { ...state, apiKey: action.payload };
     case "SET_UPLOADED_FILES":
       return { ...state, uploadedFiles: action.payload, doodleUrls: [] };
     case "ADD_UPLOADED_FILE":

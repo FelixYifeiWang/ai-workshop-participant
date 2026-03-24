@@ -21,11 +21,6 @@ function getFileType(
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key");
-  if (!apiKey) {
-    return NextResponse.json({ error: "API key required" }, { status: 401 });
-  }
-
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -38,16 +33,14 @@ export async function POST(req: NextRequest) {
     let text = "";
 
     if (fileType === "docx") {
-      // Use mammoth to extract text from DOCX
       const buffer = Buffer.from(await file.arrayBuffer());
       const result = await mammoth.extractRawText({ buffer });
       text = result.value;
     } else if (fileType === "pdf") {
-      // Send PDF directly to OpenAI
       const buffer = Buffer.from(await file.arrayBuffer());
       const base64 = buffer.toString("base64");
 
-      const openai = getOpenAIClient(apiKey);
+      const openai = getOpenAIClient();
       const response = await openai.chat.completions.create({
         model: TEXT_MODEL,
         messages: [
@@ -71,12 +64,11 @@ export async function POST(req: NextRequest) {
       });
       text = response.choices[0]?.message?.content || "";
     } else if (fileType === "image") {
-      // Send image directly to OpenAI for OCR/description
       const buffer = Buffer.from(await file.arrayBuffer());
       const base64 = buffer.toString("base64");
       const mimeType = file.type || "image/jpeg";
 
-      const openai = getOpenAIClient(apiKey);
+      const openai = getOpenAIClient();
       const response = await openai.chat.completions.create({
         model: TEXT_MODEL,
         messages: [

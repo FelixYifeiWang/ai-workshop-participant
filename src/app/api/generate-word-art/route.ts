@@ -4,18 +4,13 @@ import { wordArtFeelingPrompt, wordArtEmotionPrompt } from "@/lib/prompts";
 import { toFile } from "openai";
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key");
-  if (!apiKey) {
-    return NextResponse.json({ error: "API key required" }, { status: 401 });
-  }
-
   try {
     const { word } = await req.json();
     if (!word) {
       return NextResponse.json({ error: "Word required" }, { status: 400 });
     }
 
-    const openai = getOpenAIClient(apiKey);
+    const openai = getOpenAIClient();
 
     // Step 1: Generate the feeling doodle first
     const feelingRes = await openai.images.generate({

@@ -7,15 +7,10 @@ function stripEmDashes(text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key");
-  if (!apiKey) {
-    return NextResponse.json({ error: "API key required" }, { status: 401 });
-  }
-
   try {
     const data = await req.json();
 
-    const openai = getOpenAIClient(apiKey);
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: TEXT_MODEL,
       messages: [{ role: "user", content: reflectionPrompt(data) }],

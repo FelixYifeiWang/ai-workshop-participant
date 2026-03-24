@@ -38,10 +38,7 @@ export default function Step8MakeArt() {
 
         const res = await fetch("/api/generate-word-art", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": state.apiKey,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ word }),
         });
 

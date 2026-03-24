@@ -22,7 +22,6 @@ export default function FileUploader() {
 
     const res = await fetch("/api/extract-file", {
       method: "POST",
-      headers: { "x-api-key": state.apiKey },
       body: formData,
     });
 
