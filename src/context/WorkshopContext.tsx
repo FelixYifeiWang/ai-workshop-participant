@@ -10,9 +10,8 @@ const initialState: WorkshopState = {
   generatedQuestions: null,
   adoptedQuestion: null,
   adoptedResponse: null,
-  wordInput: null,
-  feelingImageUrl: null,
-  emotionImageUrl: null,
+  wordInputs: [],
+  wordArtPairs: [],
   reflection: null,
   currentStep: 0,
 };
@@ -48,14 +47,10 @@ function workshopReducer(
         adoptedQuestion: action.payload.question,
         adoptedResponse: action.payload.response,
       };
-    case "SET_WORD_INPUT":
-      return { ...state, wordInput: action.payload };
-    case "SET_WORD_ART":
-      return {
-        ...state,
-        feelingImageUrl: action.payload.feelingUrl,
-        emotionImageUrl: action.payload.emotionUrl,
-      };
+    case "SET_WORD_INPUTS":
+      return { ...state, wordInputs: action.payload };
+    case "SET_WORD_ART_PAIRS":
+      return { ...state, wordArtPairs: action.payload };
     case "SET_REFLECTION":
       return { ...state, reflection: action.payload };
     case "SET_STEP":

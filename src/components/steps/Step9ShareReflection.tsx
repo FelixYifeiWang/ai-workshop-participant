@@ -28,7 +28,7 @@ export default function Step9ShareReflection() {
           doodleCount: state.doodleUrls.length,
           questionsGenerated: !!state.generatedQuestions,
           questionAdopted: state.adoptedQuestion,
-          wordUsed: state.wordInput,
+          wordUsed: state.wordInputs.length > 0 ? state.wordInputs.join(", ") : null,
         }),
       });
 

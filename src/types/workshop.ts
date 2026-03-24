@@ -3,6 +3,12 @@ export interface UploadedFile {
   text: string;
 }
 
+export interface WordArtPair {
+  word: string;
+  feelingUrl: string;
+  emotionUrl: string;
+}
+
 export interface WorkshopState {
   // API key
   apiKey: string;
@@ -17,9 +23,8 @@ export interface WorkshopState {
   adoptedResponse: string | null;
 
   // Step 8
-  wordInput: string | null;
-  feelingImageUrl: string | null;
-  emotionImageUrl: string | null;
+  wordInputs: string[];
+  wordArtPairs: WordArtPair[];
 
   // Step 9
   reflection: string | null;
@@ -36,7 +41,7 @@ export type WorkshopAction =
   | { type: "SET_DOODLE_URLS"; payload: string[] }
   | { type: "SET_GENERATED_QUESTIONS"; payload: string[] }
   | { type: "SET_ADOPTED_QA"; payload: { question: string; response: string } }
-  | { type: "SET_WORD_INPUT"; payload: string }
-  | { type: "SET_WORD_ART"; payload: { feelingUrl: string; emotionUrl: string } }
+  | { type: "SET_WORD_INPUTS"; payload: string[] }
+  | { type: "SET_WORD_ART_PAIRS"; payload: WordArtPair[] }
   | { type: "SET_REFLECTION"; payload: string }
   | { type: "SET_STEP"; payload: number };

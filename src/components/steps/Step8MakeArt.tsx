@@ -2,77 +2,91 @@
 
 import { useState } from "react";
 import { useWorkshop } from "@/context/WorkshopContext";
+import { WordArtPair } from "@/types/workshop";
 import DoodleDisplay from "../DoodleDisplay";
 import LoadingSpinner from "../LoadingSpinner";
 
 export default function Step8MakeArt() {
   const { state, dispatch } = useWorkshop();
-  const [word, setWord] = useState(state.wordInput || "");
-  const [feelingLoading, setFeelingLoading] = useState(false);
-  const [emotionLoading, setEmotionLoading] = useState(false);
+  const [input, setInput] = useState(state.wordInputs.join(", ") || "");
+  const [generating, setGenerating] = useState(false);
+  const [currentLabel, setCurrentLabel] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  async function generateArt() {
-    if (!word.trim()) return;
-    setError(null);
-    dispatch({ type: "SET_WORD_INPUT", payload: word.trim() });
-    dispatch({
-      type: "SET_WORD_ART",
-      payload: { feelingUrl: "", emotionUrl: "" },
-    });
-
-    try {
-      setFeelingLoading(true);
-      const res = await fetch("/api/generate-word-art", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": state.apiKey,
-        },
-        body: JSON.stringify({ word: word.trim() }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to generate art");
-      }
-
-      const data = await res.json();
-
-      // Show feeling image first
-      setFeelingLoading(false);
-      dispatch({
-        type: "SET_WORD_ART",
-        payload: {
-          feelingUrl: data.feelingImageUrl,
-          emotionUrl: "",
-        },
-      });
-
-      // Brief pause before revealing emotion image
-      setEmotionLoading(true);
-      await new Promise((r) => setTimeout(r, 800));
-      setEmotionLoading(false);
-
-      dispatch({
-        type: "SET_WORD_ART",
-        payload: {
-          feelingUrl: data.feelingImageUrl,
-          emotionUrl: data.emotionImageUrl,
-        },
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-      setFeelingLoading(false);
-      setEmotionLoading(false);
-    }
+  function parseWords(raw: string): string[] {
+    return raw
+      .split(",")
+      .map((w) => w.trim().toLowerCase())
+      .filter((w) => w.length > 0);
   }
 
-  const showResults =
-    feelingLoading ||
-    emotionLoading ||
-    state.feelingImageUrl ||
-    state.emotionImageUrl;
+  async function generateAll() {
+    const words = parseWords(input);
+    if (words.length === 0) return;
+
+    setError(null);
+    setGenerating(true);
+    dispatch({ type: "SET_WORD_INPUTS", payload: words });
+    dispatch({ type: "SET_WORD_ART_PAIRS", payload: [] });
+
+    const pairs: WordArtPair[] = [];
+
+    for (const word of words) {
+      try {
+        // Generate feeling + emotion for this word
+        setCurrentLabel(`Generating feeling doodle for "${word}"...`);
+
+        const res = await fetch("/api/generate-word-art", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": state.apiKey,
+          },
+          body: JSON.stringify({ word }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || `Failed to generate art for "${word}"`);
+        }
+
+        const data = await res.json();
+
+        // Show feeling first
+        const partialPair: WordArtPair = {
+          word,
+          feelingUrl: data.feelingImageUrl,
+          emotionUrl: "",
+        };
+        dispatch({
+          type: "SET_WORD_ART_PAIRS",
+          payload: [...pairs, partialPair],
+        });
+
+        // Brief pause then reveal emotion
+        setCurrentLabel(`Revealing emotion doodle for "${word}"...`);
+        await new Promise((r) => setTimeout(r, 800));
+
+        const completePair: WordArtPair = {
+          word,
+          feelingUrl: data.feelingImageUrl,
+          emotionUrl: data.emotionImageUrl,
+        };
+        pairs.push(completePair);
+        dispatch({ type: "SET_WORD_ART_PAIRS", payload: [...pairs] });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+        setGenerating(false);
+        setCurrentLabel("");
+        return;
+      }
+    }
+
+    setGenerating(false);
+    setCurrentLabel("");
+  }
+
+  const hasResults = state.wordArtPairs.length > 0;
 
   return (
     <div className="space-y-6">
@@ -81,8 +95,8 @@ export default function Step8MakeArt() {
           Step 8: Make Art From the Text
         </h2>
         <p className="text-gray-500 text-sm">
-          Full art generation is coming soon. For now, enter a word to explore
-          the difference between its feeling and emotion.
+          Full art generation is coming soon. For now, enter words separated by
+          commas to explore the difference between feeling and emotion for each.
         </p>
       </div>
 
@@ -93,58 +107,61 @@ export default function Step8MakeArt() {
         </p>
       </div>
 
-      {/* Word art sub-feature */}
+      {/* Word art input */}
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-700">Word Art Generator</h3>
         <div className="flex gap-3">
           <input
             type="text"
-            value={word}
-            onChange={(e) => setWord(e.target.value)}
-            placeholder='Enter a word (e.g. "angry")'
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder='e.g. "angry, sad, joyful"'
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
           />
           <button
-            onClick={generateArt}
-            disabled={!word.trim() || feelingLoading || emotionLoading}
+            onClick={generateAll}
+            disabled={parseWords(input).length === 0 || generating}
             className="px-6 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
           >
             Generate
           </button>
         </div>
+        {parseWords(input).length > 1 && !generating && (
+          <p className="text-xs text-gray-400">
+            {parseWords(input).length} words: {parseWords(input).join(", ")}
+          </p>
+        )}
       </div>
 
-      {/* Sequential doodle reveal */}
-      {showResults && (
-        <div className="space-y-6">
-          {/* Feeling doodle */}
-          {feelingLoading ? (
-            <LoadingSpinner message="Generating feeling doodle..." />
-          ) : (
-            state.feelingImageUrl && (
-              <DoodleDisplay
-                imageUrl={state.feelingImageUrl}
-                loading={false}
-                label={`The feeling of "${state.wordInput || word}"`}
-              />
-            )
-          )}
-
-          {/* Emotion doodle (appears after feeling) */}
-          {!feelingLoading && state.feelingImageUrl && (
-            <>
-              {emotionLoading ? (
-                <LoadingSpinner message="Now generating emotion doodle with feeling as context..." />
-              ) : (
-                state.emotionImageUrl && (
+      {/* Results */}
+      {(hasResults || generating) && (
+        <div className="space-y-8">
+          {state.wordArtPairs.map((pair, i) => (
+            <div key={i} className="space-y-4">
+              <h4 className="font-semibold text-gray-600 text-sm border-b pb-1">
+                &ldquo;{pair.word}&rdquo;
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DoodleDisplay
+                  imageUrl={pair.feelingUrl}
+                  loading={false}
+                  label={`Feeling of "${pair.word}"`}
+                />
+                {pair.emotionUrl ? (
                   <DoodleDisplay
-                    imageUrl={state.emotionImageUrl}
+                    imageUrl={pair.emotionUrl}
                     loading={false}
-                    label={`The emotion of "${state.wordInput || word}"`}
+                    label={`Emotion of "${pair.word}"`}
                   />
-                )
-              )}
-            </>
+                ) : (
+                  <LoadingSpinner message={`Generating emotion doodle for "${pair.word}"...`} />
+                )}
+              </div>
+            </div>
+          ))}
+
+          {generating && currentLabel && state.wordArtPairs.length < state.wordInputs.length && (
+            <LoadingSpinner message={currentLabel} />
           )}
         </div>
       )}
